@@ -23,6 +23,11 @@ jobs:
           node-version: '22'
       - run: npm install --no-audit --no-fund
       - name: Regenerate the index from the upstream repository
+        # The token lifts the api.github.com per-IP rate limit that shared runner
+        # addresses hit. make-index.mjs also falls back to a shallow clone, so the
+        # job still succeeds if the API refuses the token.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node make-index.mjs --out index.json
       - name: Commit a refreshed index
         run: |
