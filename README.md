@@ -47,7 +47,34 @@ or, for a profile that prefers a local copy, point at any static server that ser
 
 `format` must be the **number** `1`. Each version's `source` is either `npm`
 (`name@version`) or `git` (a canonical `https` repository URL plus a 40-hex commit SHA);
-`dsh-purge` is not published to npm, so the entry uses `git`.
+`dsh-purge` is not published to npm, so the entry uses `git`. The `git` source installs as
+`git+https://github.com/YuJunZhiXue/dsh-purge.git#ac58b3e3…`, which pnpm resolves to the
+commit-pinned tarball
+`https://codeload.github.com/YuJunZhiXue/dsh-purge/tar.gz/ac58b3e3…` and verifies by
+integrity hash.
+
+## Installing it
+
+The market's **Install** button (or `dsh plugin add`) runs pnpm, which blocks a dependency's
+install script until it is allowed. `dsh-purge`'s `postinstall`
+(`scripts/ensure-profile-bundle.mjs`) only appends `dsh-purge` to the profile's
+`dsh.profile.bundles`, but pnpm still needs the approval first. In the target profile's
+`pnpm-workspace.yaml`:
+
+```yaml
+allowBuilds:
+  dsh-purge@https://codeload.github.com/YuJunZhiXue/dsh-purge/tar.gz/<commit>: true
+```
+
+`<commit>` is the commit the index pins, so the key changes with every release. The key pnpm
+prints on the blocked attempt is the exact one to copy.
+
+From the command line:
+
+```bash
+dsh plugin --profile <profile> add \
+  "git+https://github.com/YuJunZhiXue/dsh-purge.git#ac58b3e35509da23bd75b6250f01007590524102"
+```
 
 ## Regenerating
 
