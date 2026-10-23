@@ -58,8 +58,11 @@ integrity hash.
 The market's **Install** button (or `dsh plugin add`) runs pnpm, which blocks a dependency's
 install script until it is allowed. `dsh-purge`'s `postinstall`
 (`scripts/ensure-profile-bundle.mjs`) only appends `dsh-purge` to the profile's
-`dsh.profile.bundles`, but pnpm still needs the approval first. In the target profile's
-`pnpm-workspace.yaml`:
+`dsh.profile.bundles`, but pnpm still needs the approval first.
+
+DSH handles this: the install dialog reports the blocked build and offers to approve it
+(`approvedBuilds`). If you approve there, nothing else is needed. If you install from a
+terminal instead, add the key pnpm prints to the target profile's `pnpm-workspace.yaml`:
 
 ```yaml
 allowBuilds:
@@ -67,7 +70,8 @@ allowBuilds:
 ```
 
 `<commit>` is the commit the index pins, so the key changes with every release. The key pnpm
-prints on the blocked attempt is the exact one to copy.
+prints on the blocked attempt is the exact one to copy; the DSH UI shows the same key in its
+`installFailureBuildBlockedManual` message.
 
 From the command line:
 
