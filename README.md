@@ -118,3 +118,18 @@ Error: https://github.com/YuJunZhiXue/dsh-purge: $.format must be 1
 GitHub answers the market's `Accept: application/json` request with HTTP 200 and the repository
 page as JSON, so the fetch succeeds and the *validation* fails: the body has no `format` field.
 A market index must be served as a JSON document at a URL that returns it directly.
+
+## Refresh
+
+The canonical index is generated in the plugin mirror
+([`jcforever1/dsh-purge`](https://github.com/jcforever1/dsh-purge)) and copied here every six
+hours by `.github/workflows/update-index.yml`. The canonical URL is:
+
+```
+https://raw.githubusercontent.com/jcforever1/dsh-purge/master/index.json
+```
+
+Note: `raw.githubusercontent.com` caches per path, so after a push this URL can serve the previous
+bytes for a few minutes. The repository's own content is always current — check
+`https://api.github.com/repos/jcforever1/dsh-purge-market/contents/index.json` if the two
+disagree.
