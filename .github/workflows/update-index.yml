@@ -1,5 +1,9 @@
 name: Update market index
 
+# This repository is a compatibility alias. The canonical market index now lives with the
+# plugin's mirror repository and is generated there; this workflow copies that document so
+# the older URL keeps serving the same bytes.
+
 on:
   workflow_dispatch:
   schedule:
@@ -7,8 +11,7 @@ on:
   push:
     branches: [main]
     paths:
-      - make-index.mjs
-      - .github/workflows/update-index.yml
+      - '.github/workflows/update-index.yml'
 
 permissions:
   contents: write
@@ -18,17 +21,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - run: npm install --no-audit --no-fund
-      - name: Regenerate the index from the upstream repository
-        # The token lifts the api.github.com per-IP rate limit that shared runner
-        # addresses hit. make-index.mjs also falls back to a shallow clone, so the
-        # job still succeeds if the API refuses the token.
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node make-index.mjs --out index.json
+
+      - name: Copy the canonical index from the plugin mirror
+        run: |
+          curl -sSfL --retry 3 --retry-delay 5 \
+            https://raw.githubusercontent.com/jcforever1/dsh-purge/master/index.json \
+            -o index.json
+          node -e "
+            const fs = require('fs');
+            const doc = JSON.parse(fs.readFileSync('index.json', 'utf8'));
+            if (doc.format !== 1) throw new Error('the copied document is not format 1');
+            console.log('format 1, plugins:', doc.plugins.length);
+          "
+
       - name: Commit a refreshed index
         run: |
           git config user.name  'github-actions[bot]'
